@@ -1,4 +1,6 @@
 import { Component, signal } from "@angular/core";
+import { Router, NavigationEnd } from "@angular/router";
+import { filter } from "rxjs/operators";
 
 @Component({
   selector: "app-root",
@@ -8,6 +10,17 @@ import { Component, signal } from "@angular/core";
 })
 export class App {
   protected readonly title = signal("Metro National Bank");
+  isHomePage = signal(true);
+
+  constructor(private readonly router: Router) {
+    this.router.events
+      .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
+      .subscribe((e) => {
+        this.isHomePage.set(
+          e.urlAfterRedirects === "/" || e.urlAfterRedirects === ""
+        );
+      });
+  }
   showLoginModal = signal(false);
   searchTerm = signal("");
   searchResultHtml = signal("");
