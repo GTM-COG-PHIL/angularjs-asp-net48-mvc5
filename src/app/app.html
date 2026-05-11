@@ -187,7 +187,12 @@
 <!-- VULNERABILITY: innerHTML binding for XSS -->
 <div [innerHTML]="searchResultHtml()" class="search-results-container"></div>
 
-<!-- Hero Banner -->
+<!-- Router Outlet for child pages -->
+<router-outlet></router-outlet>
+
+<!-- Hero Banner (only on home page) -->
+<ng-container *ngIf="isHomePage()">
+
 <section class="hero">
   <div class="hero-container">
     <div class="hero-content">
@@ -196,7 +201,7 @@
         Seamlessly manage your money, grow your savings, and plan for the
         future. Open a checking account today and get started.
       </p>
-      <a href="#" class="cta-button">Get Started</a>
+      <a routerLink="/get-started" class="cta-button">Get Started</a>
     </div>
     <div class="hero-image">
       <div class="hero-placeholder">
@@ -593,6 +598,8 @@
     </div>
   </div>
 </footer>
+
+</ng-container>
 
 <!-- Login Modal -->
 <app-login-modal

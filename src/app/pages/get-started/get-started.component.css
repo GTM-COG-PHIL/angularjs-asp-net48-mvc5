@@ -1,0 +1,550 @@
+/* ===== Page Navigation ===== */
+.page-nav {
+  background: var(--gray-100);
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.page-nav-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0.75rem 1.5rem;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.875rem;
+  color: var(--gray-700);
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.back-link:hover {
+  color: var(--green);
+}
+
+/* ===== Hero ===== */
+.get-started-hero {
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+  color: var(--white);
+  text-align: center;
+  padding: 3rem 1.5rem 2rem;
+}
+
+.get-started-hero h1 {
+  font-size: 2.25rem;
+  font-weight: 700;
+  margin: 0 0 0.75rem;
+}
+
+.get-started-hero p {
+  font-size: 1.05rem;
+  color: rgba(255, 255, 255, 0.8);
+  max-width: 550px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* ===== Container ===== */
+.gs-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+/* ===== Progress Bar ===== */
+.progress-section {
+  padding: 2rem 0 0;
+}
+
+.progress-bar {
+  position: relative;
+}
+
+.progress-track {
+  height: 4px;
+  background: var(--gray-200);
+  border-radius: 2px;
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--green);
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+
+.progress-steps {
+  display: flex;
+  justify-content: space-between;
+}
+
+.step-marker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.step-dot {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--gray-200);
+  color: var(--gray-500);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+.step-marker.active .step-dot {
+  background: var(--green);
+  color: var(--white);
+}
+
+.step-marker.current .step-dot {
+  box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.25);
+}
+
+.step-label {
+  font-size: 0.75rem;
+  color: var(--gray-500);
+  font-weight: 500;
+}
+
+.step-marker.active .step-label {
+  color: var(--green);
+}
+
+/* ===== Alerts ===== */
+.alert {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1.25rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+}
+
+.alert-error {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+/* ===== Form Card ===== */
+.form-section {
+  padding: 2rem 0 3rem;
+}
+
+.form-card {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: 12px;
+  padding: 2.5rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.form-card h2 {
+  font-size: 1.5rem;
+  color: var(--navy);
+  margin: 0 0 0.5rem;
+}
+
+.form-subtitle {
+  color: var(--gray-700);
+  margin: 0 0 2rem;
+  font-size: 0.95rem;
+}
+
+/* ===== Form Grid ===== */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-group label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--gray-900);
+  margin-bottom: 0.4rem;
+}
+
+.form-group input,
+.form-group select {
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--gray-300);
+  border-radius: 6px;
+  font-size: 0.95rem;
+  transition: border-color 0.2s;
+  background: var(--white);
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
+}
+
+.field-hint {
+  font-size: 0.78rem;
+  color: var(--gray-500);
+  margin-top: 0.3rem;
+}
+
+/* ===== Promo Code ===== */
+.promo-section {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--gray-200);
+}
+
+.promo-section label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--gray-900);
+  display: block;
+  margin-bottom: 0.4rem;
+}
+
+.promo-input-group {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.promo-input-group input {
+  flex: 1;
+  padding: 0.6rem 0.85rem;
+  border: 1px solid var(--gray-300);
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.promo-btn {
+  padding: 0.6rem 1.25rem;
+  background: var(--navy);
+  color: var(--white);
+  border: none;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.promo-btn:hover {
+  background: var(--navy-light);
+}
+
+.promo-success {
+  color: var(--green);
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+}
+
+/* ===== Account Options ===== */
+.account-options {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.account-option {
+  display: block;
+  cursor: pointer;
+}
+
+.account-option input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.option-content {
+  border: 2px solid var(--gray-200);
+  border-radius: 10px;
+  padding: 1.5rem;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.option-content:hover {
+  border-color: var(--gray-300);
+}
+
+.account-option.selected .option-content {
+  border-color: var(--green);
+  background: #f0fdf4;
+}
+
+.option-content svg {
+  color: var(--green);
+  margin-bottom: 0.25rem;
+}
+
+.option-content h4 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--navy);
+}
+
+.option-content p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--gray-700);
+  line-height: 1.5;
+}
+
+.option-rate {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--green);
+  margin-top: 0.25rem;
+}
+
+/* ===== Deposit ===== */
+.deposit-group {
+  margin-top: 0;
+}
+
+.deposit-input {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--gray-300);
+  border-radius: 6px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.deposit-input:focus-within {
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
+}
+
+.dollar-sign {
+  padding: 0.7rem 0.75rem;
+  background: var(--gray-100);
+  color: var(--gray-700);
+  font-weight: 600;
+  font-size: 0.95rem;
+  border-right: 1px solid var(--gray-300);
+}
+
+.deposit-input input {
+  border: none;
+  padding: 0.7rem 0.85rem;
+  font-size: 0.95rem;
+  flex: 1;
+  outline: none;
+}
+
+/* ===== Review ===== */
+.review-section {
+  margin-bottom: 1.75rem;
+  padding-bottom: 1.75rem;
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.review-section:last-of-type {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.review-section h3 {
+  font-size: 0.95rem;
+  color: var(--gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 1rem;
+}
+
+.review-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.review-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.review-label {
+  font-size: 0.8rem;
+  color: var(--gray-500);
+  font-weight: 500;
+}
+
+.review-value {
+  font-size: 0.95rem;
+  color: var(--gray-900);
+  font-weight: 500;
+}
+
+.capitalize {
+  text-transform: capitalize;
+}
+
+/* ===== Terms ===== */
+.terms-section {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--gray-200);
+}
+
+.terms-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--gray-700);
+  line-height: 1.5;
+}
+
+.terms-checkbox input {
+  margin-top: 0.2rem;
+  accent-color: var(--green);
+}
+
+.terms-checkbox a {
+  color: var(--green);
+  font-weight: 500;
+}
+
+/* ===== Success Card ===== */
+.success-card {
+  text-align: center;
+  padding: 3rem 2.5rem;
+}
+
+.success-icon {
+  margin-bottom: 1.5rem;
+}
+
+.success-card h2 {
+  color: var(--green);
+  font-size: 1.75rem;
+  margin-bottom: 1rem;
+}
+
+.success-text {
+  font-size: 1rem;
+  color: var(--gray-900);
+  margin-bottom: 0.75rem;
+}
+
+.success-subtext {
+  font-size: 0.9rem;
+  color: var(--gray-700);
+  max-width: 450px;
+  margin: 0 auto 2rem;
+  line-height: 1.6;
+}
+
+/* ===== Form Actions ===== */
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1.5rem;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.8rem 2rem;
+  background: var(--green);
+  color: var(--white);
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  text-decoration: none;
+  margin-left: auto;
+}
+
+.btn-primary:hover {
+  background: var(--green-dark);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.8rem 2rem;
+  background: var(--white);
+  color: var(--gray-700);
+  border: 1px solid var(--gray-300);
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+  background: var(--gray-100);
+  border-color: var(--gray-500);
+}
+
+.submit-btn {
+  padding: 0.85rem 2.5rem;
+}
+
+/* ===== Referral Banner ===== */
+#referral-banner {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 640px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .review-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .get-started-hero h1 {
+    font-size: 1.75rem;
+  }
+
+  .form-card {
+    padding: 1.5rem;
+  }
+}
