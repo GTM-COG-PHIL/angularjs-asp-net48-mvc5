@@ -128,11 +128,7 @@ export class CheckingAccountsComponent {
 
   private determineAccountTier(name: string, incomeNum: number): string {
     if (incomeNum >= 100000) {
-      return (
-        "Congratulations " +
-        name +
-        "! You qualify for Premier Checking."
-      );
+      return "Congratulations " + name + "! You qualify for Premier Checking.";
     }
 
     if (incomeNum >= 50000) {
