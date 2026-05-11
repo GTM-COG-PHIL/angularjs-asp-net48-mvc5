@@ -18,7 +18,7 @@ export class App {
   currentTab = signal("personal");
   isHomePage = signal(true);
 
-  constructor(private router: Router) {
+  constructor(private readonly router: Router) {
     this.router.events
       .pipe(filter((e) => e instanceof NavigationEnd))
       .subscribe((e) => {
