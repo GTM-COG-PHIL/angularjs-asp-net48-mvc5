@@ -4,6 +4,6 @@ export class TestComponentPage {
 
   constructor(page) {
     this.page = page;
-    this.angularVersion = page.getByTestId('angular-version');
+    this.angularVersion = page.getByTestId("angular-version");
   }
 }
