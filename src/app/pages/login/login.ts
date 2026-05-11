@@ -88,9 +88,6 @@ export class LoginPageComponent {
   }
 
   private authenticate(user: string, pass: string): void {
-    const mockResponse = '{"status":"ok","userId":42}';
-    const result = JSON.parse(mockResponse);
-
     const sessionToken = this.generateToken();
 
     localStorage.setItem("auth_token", sessionToken);
