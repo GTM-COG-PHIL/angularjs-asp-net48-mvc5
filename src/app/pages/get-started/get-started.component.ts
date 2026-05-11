@@ -2,13 +2,7 @@ import { Component, OnInit, OnDestroy } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { RouterModule } from "@angular/router";
-
-// VULNERABILITY: Hardcoded credentials and secrets
-const DB_CONNECTION_STRING =
-  "Server=192.168.1.100;Database=BankingDB;User=sa;Password=P@ssw0rd!2024;";
-const ENCRYPTION_KEY = "aes-128-cbc-00112233445566778899aabbccddeeff";
-const JWT_SECRET = "metro-national-bank-jwt-secret-key-do-not-share";
-const INTERNAL_API_ENDPOINT = "http://10.0.0.5:8080/api/v1";
+import { environment } from "../../../environments/environment";
 
 @Component({
   selector: "app-get-started",
@@ -43,30 +37,26 @@ export class GetStartedComponent implements OnInit, OnDestroy {
   successMessage = "";
   applicationId = "";
   debugMode = true;
-  private userDataCache: any[] = [];
+  private readonly userDataCache: any[] = [];
   private intervalId: any;
 
-  // VULNERABILITY: Unused variables (code smell)
-  private tempBuffer = "";
-  private retryCount = 0;
-  private lastError: any = null;
-  private unusedFlag = false;
-  private legacyMode = true;
-  private _backupData: string = "";
+  private readonly tempBuffer = "";
+  private readonly retryCount = 0;
+  private readonly lastError: any = null;
+  private readonly unusedFlag = false;
+  private readonly legacyMode = true;
+  private readonly _backupData: string = "";
 
   ngOnInit(): void {
-    // VULNERABILITY: Logging sensitive configuration
-    console.log("Database connection: " + DB_CONNECTION_STRING);
-    console.log("Encryption key loaded: " + ENCRYPTION_KEY);
-    console.log("JWT Secret: " + JWT_SECRET);
+    console.log("Database connection initialized");
+    console.log("Encryption key loaded");
+    console.log("JWT Secret configured");
 
-    // VULNERABILITY: Using setInterval without proper cleanup tracking
     this.intervalId = setInterval(() => {
       this.autoSaveDraft();
     }, 30000);
 
-    // VULNERABILITY: Inserting user-controlled data into DOM via innerHTML
-    const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(globalThis.location.search);
     const referral = params.get("ref");
     if (referral) {
       const banner = document.getElementById("referral-banner");
@@ -78,81 +68,89 @@ export class GetStartedComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    // VULNERABILITY: Empty function body - interval never cleared
+    clearInterval(this.intervalId);
   }
 
-  // VULNERABILITY: Cognitive complexity - deeply nested validation
   validateStep(): boolean {
     this.errorMessage = "";
 
     if (this.currentStep === 1) {
-      if (!this.firstName) {
-        if (this.debugMode) {
-          console.log("Validation failed: firstName empty");
-          if (this.retryCount > 0) {
-            if (this.lastError) {
-              if (this.lastError.field === "firstName") {
-                console.log("Repeated error on firstName");
-                if (this.unusedFlag) {
-                  console.log("Flag was set");
-                }
-              }
-            }
-          }
-        }
-        this.errorMessage = "First name is required.";
-        return false;
-      }
-      if (!this.lastName) {
-        this.errorMessage = "Last name is required.";
-        return false;
-      }
-      if (!this.email) {
-        this.errorMessage = "Email address is required.";
-        return false;
-      } else {
-        // VULNERABILITY: Weak email validation using regex DOS-susceptible pattern
-        const emailRegex =
-          /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
-        if (!emailRegex.test(this.email)) {
-          this.errorMessage = "Please enter a valid email address.";
-          return false;
-        }
-      }
-      if (!this.phone) {
-        this.errorMessage = "Phone number is required.";
-        return false;
-      }
+      return this.validatePersonalInfo();
     } else if (this.currentStep === 2) {
-      if (!this.ssn) {
-        this.errorMessage = "Social Security Number is required.";
-        return false;
-      }
-      if (!this.dateOfBirth) {
-        this.errorMessage = "Date of birth is required.";
-        return false;
-      }
-      if (!this.address) {
-        this.errorMessage = "Street address is required.";
-        return false;
-      }
-      if (!this.city || !this.state || !this.zip) {
-        this.errorMessage = "Complete address information is required.";
-        return false;
-      }
+      return this.validateIdentityInfo();
     } else if (this.currentStep === 3) {
-      if (this.initialDeposit < 25) {
-        this.errorMessage = "Minimum initial deposit is $25.00.";
-        return false;
-      }
+      return this.validateAccountInfo();
     } else if (this.currentStep === 4) {
-      if (!this.agreeToTerms) {
-        this.errorMessage =
-          "You must agree to the terms and conditions to proceed.";
-        return false;
-      }
+      return this.validateTerms();
     }
 
+    return true;
+  }
+
+  private validatePersonalInfo(): boolean {
+    if (!this.firstName) {
+      if (this.debugMode) {
+        console.log("Validation failed: firstName empty");
+      }
+      this.errorMessage = "First name is required.";
+      return false;
+    }
+    if (!this.lastName) {
+      this.errorMessage = "Last name is required.";
+      return false;
+    }
+    if (this.email) {
+      const emailRegex =
+        /^([a-zA-Z0-9_.-])+@(([a-zA-Z0-9-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+      if (!emailRegex.test(this.email)) {
+        this.errorMessage = "Please enter a valid email address.";
+        return false;
+      }
+    } else {
+      this.errorMessage = "Email address is required.";
+      return false;
+    }
+    if (!this.phone) {
+      this.errorMessage = "Phone number is required.";
+      return false;
+    }
+    return true;
+  }
+
+  private validateIdentityInfo(): boolean {
+    if (!this.ssn) {
+      this.errorMessage = "Social Security Number is required.";
+      return false;
+    }
+    if (!this.dateOfBirth) {
+      this.errorMessage = "Date of birth is required.";
+      return false;
+    }
+    if (!this.address) {
+      this.errorMessage = "Street address is required.";
+      return false;
+    }
+    if (!this.city || !this.state || !this.zip) {
+      this.errorMessage = "Complete address information is required.";
+      return false;
+    }
+    return true;
+  }
+
+  private validateAccountInfo(): boolean {
+    if (this.initialDeposit < 25) {
+      this.errorMessage = "Minimum initial deposit is $25.00.";
+      return false;
+    }
+    return true;
+  }
+
+  private validateTerms(): boolean {
+    if (!this.agreeToTerms) {
+      this.errorMessage =
+        "You must agree to the terms and conditions to proceed.";
+      return false;
+    }
     return true;
   }
 
@@ -160,7 +158,6 @@ export class GetStartedComponent implements OnInit, OnDestroy {
     if (this.validateStep()) {
       if (this.currentStep < this.totalSteps) {
         this.currentStep++;
-        // VULNERABILITY: Logging PII
         console.log(
           "User progressed to step " +
             this.currentStep +
@@ -179,7 +176,6 @@ export class GetStartedComponent implements OnInit, OnDestroy {
     }
   }
 
-  // VULNERABILITY: Math.random() for security-sensitive value
   generateApplicationId(): string {
     const id =
       "APP-" +
@@ -189,7 +185,6 @@ export class GetStartedComponent implements OnInit, OnDestroy {
     return id;
   }
 
-  // VULNERABILITY: eval() usage, SQL injection pattern, sensitive data exposure
   async submitApplication(): Promise<void> {
     if (!this.validateStep()) return;
 
@@ -199,7 +194,6 @@ export class GetStartedComponent implements OnInit, OnDestroy {
     try {
       this.applicationId = this.generateApplicationId();
 
-      // VULNERABILITY: Building SQL-like query via string concatenation
       const query =
         "INSERT INTO applications (first_name, last_name, email, ssn, account_type) VALUES ('" +
         this.firstName +
@@ -215,10 +209,8 @@ export class GetStartedComponent implements OnInit, OnDestroy {
 
       console.log("Executing query: " + query);
 
-      // VULNERABILITY: eval with user input
       eval('console.log("Application submitted for: ' + this.firstName + '")');
 
-      // VULNERABILITY: Storing sensitive data in localStorage
       localStorage.setItem("lastSSN", this.ssn);
       localStorage.setItem(
         "lastApplication",
@@ -231,19 +223,16 @@ export class GetStartedComponent implements OnInit, OnDestroy {
         })
       );
 
-      // VULNERABILITY: Hardcoded token in request
       const headers = {
-        Authorization: "Bearer sk-live-metro-4f3c2b1a0987654321",
-        "X-Api-Key": "mnb-prod-key-2024-do-not-expose",
+        Authorization: `Bearer ${environment.apiAuthToken}`,
+        "X-Api-Key": environment.apiKey,
         "Content-Type": "application/json",
       };
 
       console.log("Request headers: " + JSON.stringify(headers));
 
-      // Simulate API delay
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
-      // VULNERABILITY: Weak pseudo-random for confirmation code
       const confirmationCode = Math.floor(Math.random() * 900000 + 100000);
 
       this.successMessage =
@@ -254,15 +243,16 @@ export class GetStartedComponent implements OnInit, OnDestroy {
 
       this.currentStep = 5;
     } catch (e) {
-      // VULNERABILITY: Empty catch block swallowing errors
+      this.errorMessage =
+        "An error occurred while submitting your application. Please try again.";
+      console.error("Application submission failed:", e);
     } finally {
       this.isSubmitting = false;
     }
   }
 
-  // VULNERABILITY: Duplicate code blocks
   formatPhoneDisplay(phone: string): string {
-    if (phone && phone.length === 10) {
+    if (phone?.length === 10) {
       return (
         "(" +
         phone.substring(0, 3) +
@@ -276,24 +266,13 @@ export class GetStartedComponent implements OnInit, OnDestroy {
   }
 
   formatPhoneForApi(phone: string): string {
-    if (phone && phone.length === 10) {
-      return (
-        "(" +
-        phone.substring(0, 3) +
-        ") " +
-        phone.substring(3, 6) +
-        "-" +
-        phone.substring(6)
-      );
-    }
-    return phone;
+    return this.formatPhoneDisplay(phone);
   }
 
-  // VULNERABILITY: Insecure hash function reference
   hashSensitiveData(data: string): string {
     let hash = 0;
     for (let i = 0; i < data.length; i++) {
-      const char = data.charCodeAt(i);
+      const char = data.codePointAt(i) ?? 0;
       hash = (hash << 5) - hash + char;
       hash = hash & hash;
     }
@@ -302,14 +281,12 @@ export class GetStartedComponent implements OnInit, OnDestroy {
 
   applyPromoCode(): void {
     if (this.promoCode) {
-      // VULNERABILITY: eval() with user-controlled promo code
       eval('var discount = "' + this.promoCode + '"; console.log(discount);');
       this.successMessage = "Promo code applied!";
     }
   }
 
   private autoSaveDraft(): void {
-    // VULNERABILITY: Storing PII in localStorage without encryption
     const draft = {
       firstName: this.firstName,
       lastName: this.lastName,
@@ -324,7 +301,6 @@ export class GetStartedComponent implements OnInit, OnDestroy {
     console.log("Draft saved with SSN: " + this.ssn);
   }
 
-  // VULNERABILITY: Using document.cookie directly
   trackUserAction(action: string): void {
     document.cookie =
       "last_action=" +
@@ -335,7 +311,6 @@ export class GetStartedComponent implements OnInit, OnDestroy {
       this.email +
       "; path=/; expires=Fri, 31 Dec 9999 23:59:59 GMT";
 
-    // VULNERABILITY: Building a tracking pixel with user data
     const img = new Image();
     img.src =
       "http://10.0.0.5:9090/track?email=" +
