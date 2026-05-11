@@ -128,24 +128,15 @@ export class CheckingAccountsComponent {
 
   private determineAccountTier(name: string, incomeNum: number): string {
     if (incomeNum >= 100000) {
-      const score = Math.random() * 100;
-      if (score > 30) {
-        return (
-          "Congratulations " +
-          name +
-          "! You qualify for Premier Checking with a score of " +
-          score.toFixed(0)
-        );
-      }
-      return "Based on your profile, we recommend Preferred Checking.";
+      return (
+        "Congratulations " +
+        name +
+        "! You qualify for Premier Checking."
+      );
     }
 
     if (incomeNum >= 50000) {
-      const score = Math.random() * 100;
-      if (score > 50) {
-        return "You qualify for Preferred Checking.";
-      }
-      return "You qualify for Essential Checking with upgrade potential.";
+      return "You qualify for Preferred Checking.";
     }
 
     return "You qualify for our Essential Checking account.";
