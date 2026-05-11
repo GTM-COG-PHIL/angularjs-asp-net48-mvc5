@@ -2,7 +2,13 @@
   <div class="login-container">
     <div class="login-left">
       <div class="login-branding">
-        <div class="login-logo" (click)="goHome()">
+        <div
+          class="login-logo"
+          (click)="goHome()"
+          (keydown.enter)="goHome()"
+          tabindex="0"
+          role="button"
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="40"
