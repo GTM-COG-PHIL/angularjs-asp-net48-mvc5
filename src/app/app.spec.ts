@@ -1,23 +1,26 @@
-import { TestBed } from '@angular/core/testing';
-import { App } from './app';
+import { TestBed } from "@angular/core/testing";
+import { AppModule } from "./app.module";
+import { App } from "./app";
 
-describe('App', () => {
+describe("App", () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [App],
+      imports: [AppModule],
     }).compileComponents();
   });
 
-  it('should create the app', () => {
+  it("should create the app", () => {
     const fixture = TestBed.createComponent(App);
     const app = fixture.componentInstance;
     expect(app).toBeTruthy();
   });
 
-  it('should render title', async () => {
+  it("should render hero heading", async () => {
     const fixture = TestBed.createComponent(App);
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, angular-app');
+    expect(compiled.querySelector("h1")?.textContent).toContain(
+      "Welcome to smarter banking"
+    );
   });
 });

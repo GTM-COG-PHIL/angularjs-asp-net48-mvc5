@@ -1,4 +1,5 @@
 # AngularJS with .NET Framework
+
 A demo project using AngularJS, .NET Framework 4.8, and ASP.NET MVC 5.
 
 ## Features
@@ -12,12 +13,13 @@ A demo project using AngularJS, .NET Framework 4.8, and ASP.NET MVC 5.
 ## Prerequisites
 
 - Windows 10/11 - Older versions of Windows may work but have not been tested.
-- [Visual Studio 2022](https://visualstudio.microsoft.com/downloads/) - The free *Community Edition* is sufficient.
-Older versions of Visual Studio may work but have not been tested.
+- [Visual Studio 2022](https://visualstudio.microsoft.com/downloads/) - The free _Community Edition_ is sufficient.
+  Older versions of Visual Studio may work but have not been tested.
 - [.Net Framework 4.8](https://dotnet.microsoft.com/en-us/download/dotnet-framework) - This can optionally be installed
-as part of the Visual Studio 2022 installation as well.
+  as part of the Visual Studio 2022 installation as well.
 
 ## Getting Started
+
 - Make sure you have configured your authentication with the XLTS.dev registry by supplying your token in the `.npmrc` file in your user home directory.
 
   > **Note**
@@ -31,4 +33,5 @@ as part of the Visual Studio 2022 installation as well.
   browser and display the web application.
 
 ## AngularJS LTS packages
+
 If you want to use the LTS packages, you have to run `npm run switch-to-lts-packages` script instead of `npm install`.

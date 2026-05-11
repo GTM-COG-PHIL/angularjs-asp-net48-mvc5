@@ -4,6 +4,6 @@ export class TestDirectivePage {
 
   constructor(page) {
     this.page = page;
-    this.angularVersion = page.getByTestId('angular-version-directive');
+    this.angularVersion = page.getByTestId("angular-version-directive");
   }
 }
