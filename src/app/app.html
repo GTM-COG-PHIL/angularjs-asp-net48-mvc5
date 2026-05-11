@@ -149,7 +149,7 @@
         </div>
 
         <!-- Login Button -->
-        <button class="login-btn" (click)="openLogin()" *ngIf="!isLoggedIn()">
+        <a class="login-btn" routerLink="/login" *ngIf="!isLoggedIn()">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="18"
@@ -162,7 +162,7 @@
             />
           </svg>
           Log In
-        </button>
+        </a>
         <span class="welcome-user" *ngIf="isLoggedIn()"
           >Welcome, {{ loggedInUser() }}</span
         >
@@ -183,6 +183,12 @@
     </nav>
   </div>
 </header>
+
+<!-- Router outlet for page navigation -->
+<router-outlet></router-outlet>
+
+<!-- Home page content (hidden when navigating to sub-routes) -->
+<ng-container *ngIf="isHomePage()">
 
 <!-- VULNERABILITY: innerHTML binding for XSS -->
 <div [innerHTML]="searchResultHtml()" class="search-results-container"></div>
@@ -470,6 +476,8 @@
     </div>
   </div>
 </section>
+
+</ng-container>
 
 <!-- Footer -->
 <footer class="main-footer">
