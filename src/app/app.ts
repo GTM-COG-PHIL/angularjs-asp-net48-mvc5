@@ -12,11 +12,13 @@ export class App {
   protected readonly title = signal("Metro National Bank");
   isHomePage = signal(true);
 
-  constructor(private router: Router) {
+  constructor(private readonly router: Router) {
     this.router.events
       .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
       .subscribe((e) => {
-        this.isHomePage.set(e.urlAfterRedirects === "/" || e.urlAfterRedirects === "");
+        this.isHomePage.set(
+          e.urlAfterRedirects === "/" || e.urlAfterRedirects === ""
+        );
       });
   }
   showLoginModal = signal(false);
