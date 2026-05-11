@@ -2,13 +2,7 @@
   <div class="login-container">
     <div class="login-left">
       <div class="login-branding">
-        <div
-          class="login-logo"
-          (click)="goHome()"
-          (keydown.enter)="goHome()"
-          tabindex="0"
-          role="button"
-        >
+        <button type="button" class="login-logo" (click)="goHome()">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="40"
@@ -21,7 +15,7 @@
             />
           </svg>
           <span>Metro National Bank</span>
-        </div>
+        </button>
         <h1>Welcome back</h1>
         <p>
           Sign in to access your accounts, view statements, transfer funds, and

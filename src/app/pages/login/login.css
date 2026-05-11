@@ -35,6 +35,10 @@
   gap: 0.75rem;
   margin-bottom: 2.5rem;
   cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
 }
 
 .login-logo svg {
