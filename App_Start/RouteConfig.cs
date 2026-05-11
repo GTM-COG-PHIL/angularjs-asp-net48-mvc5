@@ -7,7 +7,7 @@ using System.Web.Routing;
 
 namespace asp_net_angularjs
 {
-    public class RouteConfig
+    public static class RouteConfig
     {
         public static void RegisterRoutes(RouteCollection routes)
         {

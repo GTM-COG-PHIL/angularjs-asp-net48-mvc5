@@ -1,10 +1,13 @@
 using System.Web.Optimization;
 
-public class BundleConfig
+namespace asp_net_angularjs
 {
-  public static void RegisterBundles(BundleCollection bundles)
+  public static class BundleConfig
   {
-    // AngularJS/jQuery bundles removed — frontend assets are now served
-    // from Angular CLI build output in Content/app/browser/.
+    public static void RegisterBundles(BundleCollection bundles)
+    {
+      // AngularJS/jQuery bundles removed — frontend assets are now served
+      // from Angular CLI build output in Content/app/browser/.
+    }
   }
 }
