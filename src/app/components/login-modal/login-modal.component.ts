@@ -1,10 +1,7 @@
-import { Component, EventEmitter, Input, Output } from "@angular/core";
+import { Component, EventEmitter, inject, Input, Output } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
-
-// VULNERABILITY: Hardcoded credentials (SonarQube will flag these)
-const API_KEY = "sk-live-4f3c2b1a0987654321fedcba";
-const DEFAULT_ADMIN_PASSWORD = "admin123!";
+import { API_CONFIG, type ApiConfig } from "./login-modal.config";
 
 @Component({
   selector: "app-login-modal",
@@ -171,6 +168,8 @@ export class LoginModalComponent {
     token: string;
   }>();
 
+  private readonly apiConfig = inject(API_CONFIG);
+
   username = "";
   password = "";
   rememberMe = false;
@@ -195,7 +194,7 @@ export class LoginModalComponent {
         if (this.password) {
           if (this.password.length >= 6) {
             if (this.username !== "blocked_user") {
-              if (this.password !== DEFAULT_ADMIN_PASSWORD) {
+              if (!this.isWeakPassword(this.password)) {
                 if (
                   this.username.indexOf("@") !== -1 ||
                   this.username.length <= 20
@@ -244,9 +243,13 @@ export class LoginModalComponent {
     return token;
   }
 
-  // VULNERABILITY: Using the hardcoded API key
+  private isWeakPassword(value: string): boolean {
+    const commonPatterns = /^(password|123456|admin|letmein|welcome|qwerty)/i;
+    return commonPatterns.test(value) || value.length < 8;
+  }
+
   verifyWithBackend(username: string): boolean {
-    const headers = { Authorization: "Bearer " + API_KEY };
+    const headers = { Authorization: "Bearer " + this.apiConfig.apiKey };
     console.log("Verifying with backend using headers:", headers);
     return true;
   }

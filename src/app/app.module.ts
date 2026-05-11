@@ -6,6 +6,8 @@ import { App } from "./app";
 import { TestComponent } from "./components/test/test.component";
 import { TestDirectiveComponent } from "./components/test-directive/test-directive.component";
 import { LoginModalComponent } from "./components/login-modal/login-modal.component";
+import { API_CONFIG } from "./components/login-modal/login-modal.config";
+import { environment } from "../environments/environment";
 import { routes } from "./app.routes";
 
 @NgModule({
@@ -16,6 +18,9 @@ import { routes } from "./app.routes";
     TestComponent,
     TestDirectiveComponent,
     LoginModalComponent,
+  ],
+  providers: [
+    { provide: API_CONFIG, useValue: { apiKey: environment.apiKey } },
   ],
   bootstrap: [App],
 })
