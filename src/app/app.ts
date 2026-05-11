@@ -10,11 +10,13 @@ import { NavigationEnd, Router } from "@angular/router";
 export class App {
   protected readonly title = signal("Metro National Bank");
   isHomePage = signal(true);
+  currentUrl = signal("/");
 
   constructor(private readonly router: Router) {
     this.router.events.subscribe((event) => {
       if (event instanceof NavigationEnd) {
         this.isHomePage.set(event.urlAfterRedirects === "/");
+        this.currentUrl.set(event.urlAfterRedirects);
       }
     });
   }
