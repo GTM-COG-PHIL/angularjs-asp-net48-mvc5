@@ -172,7 +172,13 @@
     <!-- Secondary Navigation -->
     <nav class="secondary-nav" aria-label="Secondary Navigation">
       <ul>
-        <li><a href="#">Checking Accounts</a></li>
+        <li>
+          <a
+            href="/checking-accounts"
+            [class.active]="currentUrl() === '/checking-accounts'"
+            >Checking Accounts</a
+          >
+        </li>
         <li><a href="#">Savings Accounts</a></li>
         <li><a href="#">Credit Cards</a></li>
         <li><a href="#">Home Loans</a></li>
@@ -184,6 +190,7 @@
   </div>
 </header>
 
+@if (isHomePage()) {
 <!-- VULNERABILITY: innerHTML binding for XSS -->
 <div [innerHTML]="searchResultHtml()" class="search-results-container"></div>
 
@@ -219,7 +226,7 @@
 <!-- Quick Links -->
 <section class="quick-links">
   <div class="quick-links-container">
-    <a href="#" class="quick-link-card">
+    <a href="/checking-accounts" class="quick-link-card">
       <div class="quick-link-icon">
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -470,6 +477,10 @@
     </div>
   </div>
 </section>
+
+}
+
+<router-outlet></router-outlet>
 
 <!-- Footer -->
 <footer class="main-footer">

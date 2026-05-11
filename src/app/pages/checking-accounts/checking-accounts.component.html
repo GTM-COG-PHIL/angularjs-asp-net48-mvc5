@@ -1,0 +1,277 @@
+<!-- Hero Banner -->
+<section class="hero">
+  <div class="hero-container">
+    <div class="hero-content">
+      <h1>Checking accounts built around you.</h1>
+      <p>
+        Whether you need a simple free account or premium perks, we have a
+        checking account to match your lifestyle. No hidden fees, ever.
+      </p>
+      <a href="#compare" class="cta-button">Compare Accounts</a>
+    </div>
+    <div class="hero-image">
+      <div class="hero-placeholder" aria-hidden="true">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="100"
+          height="100"
+          viewBox="0 0 24 24"
+          fill="rgba(255,255,255,0.35)"
+        >
+          <path
+            d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zM6 20V4h5v7h7v9H6z"
+          />
+          <path d="M8 15h8v2H8zm0-3h8v2H8z" />
+        </svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Account Cards -->
+<section class="account-cards" id="compare">
+  <div class="account-cards-container">
+    <h2>Choose the right account for you</h2>
+    <div class="cards-grid">
+      @for (account of accounts(); track account.name) {
+      <div class="account-card" [class.recommended]="account.recommended">
+        <div class="card-badge" *ngIf="account.recommended">Most Popular</div>
+        <h3>{{ account.name }}</h3>
+        <div class="card-price">
+          <span class="price-amount">{{ account.monthlyFee }}</span>
+          <span class="price-label">/month</span>
+        </div>
+        <div class="card-detail">
+          <span class="detail-label">Min. Balance</span>
+          <span class="detail-value">{{ account.minBalance }}</span>
+        </div>
+        <div class="card-detail">
+          <span class="detail-label">APY</span>
+          <span class="detail-value">{{ account.apy }}</span>
+        </div>
+        <ul class="card-features">
+          @for (feature of account.features; track feature) {
+          <li>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="#2e7d32"
+            >
+              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+            </svg>
+            {{ feature }}
+          </li>
+          }
+        </ul>
+        <button
+          class="card-cta"
+          [class.card-cta-primary]="account.recommended"
+          (click)="navigateToAccount(account.name)"
+        >
+          Open Account
+        </button>
+        <button
+          class="card-compare-btn"
+          (click)="compareAccounts(account.name)"
+        >
+          Compare
+        </button>
+      </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- VULNERABILITY: innerHTML binding for XSS -->
+<div [innerHTML]="comparisonHtml()" class="comparison-container"></div>
+
+<!-- Promo Code Section -->
+<section class="promo-section">
+  <div class="promo-container">
+    <div class="promo-content">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="48"
+        height="48"
+        viewBox="0 0 24 24"
+        fill="#2e7d32"
+      >
+        <path
+          d="M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58.55 0 1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41 0-.55-.23-1.06-.59-1.42zM5.5 7C4.67 7 4 6.33 4 5.5S4.67 4 5.5 4 7 4.67 7 5.5 6.33 7 5.5 7z"
+        />
+      </svg>
+      <div>
+        <h3>Have a promo code?</h3>
+        <p>
+          Enter your promotional code to unlock exclusive account benefits and
+          waived fees.
+        </p>
+      </div>
+    </div>
+    <div class="promo-form">
+      <input
+        type="text"
+        placeholder="Enter promo code"
+        [value]="promoCodeInput()"
+        (input)="promoCodeInput.set($any($event.target).value)"
+      />
+      <button (click)="applyPromoCode()">Apply</button>
+    </div>
+    <p class="promo-message" *ngIf="promoMessage()">{{ promoMessage() }}</p>
+  </div>
+</section>
+
+<!-- Features Highlight -->
+<section class="features-highlight">
+  <div class="features-highlight-container">
+    <div class="feature-item">
+      <div class="feature-icon">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="36"
+          height="36"
+          viewBox="0 0 24 24"
+          fill="#2e7d32"
+        >
+          <path
+            d="M17 1.01L7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM17 19H7V5h10v14z"
+          />
+        </svg>
+      </div>
+      <h3>Mobile Banking</h3>
+      <p>Deposit checks, pay bills, and transfer money from your phone.</p>
+    </div>
+    <div class="feature-item">
+      <div class="feature-icon">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="36"
+          height="36"
+          viewBox="0 0 24 24"
+          fill="#2e7d32"
+        >
+          <path
+            d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"
+          />
+        </svg>
+      </div>
+      <h3>Fraud Protection</h3>
+      <p>
+        Real-time alerts and zero-liability protection on unauthorized
+        purchases.
+      </p>
+    </div>
+    <div class="feature-item">
+      <div class="feature-icon">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="36"
+          height="36"
+          viewBox="0 0 24 24"
+          fill="#2e7d32"
+        >
+          <path
+            d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"
+          />
+        </svg>
+      </div>
+      <h3>No Hidden Fees</h3>
+      <p>
+        Transparent pricing with no surprises. What you see is what you get.
+      </p>
+    </div>
+    <div class="feature-item">
+      <div class="feature-icon">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="36"
+          height="36"
+          viewBox="0 0 24 24"
+          fill="#2e7d32"
+        >
+          <path
+            d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"
+          />
+        </svg>
+      </div>
+      <h3>55,000+ ATMs</h3>
+      <p>Access your cash fee-free at ATMs across the country.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Eligibility Check Section -->
+<section class="eligibility-section">
+  <div class="eligibility-container">
+    <div class="eligibility-info">
+      <h2>Check your eligibility</h2>
+      <p>
+        Find out which checking account is right for you. Enter your details
+        below and we'll recommend the best match based on your financial
+        profile.
+      </p>
+    </div>
+    <div class="eligibility-form">
+      <div class="form-group">
+        <label for="app-name">Full Name</label>
+        <input
+          id="app-name"
+          type="text"
+          placeholder="John Smith"
+          [value]="applicationName()"
+          (input)="applicationName.set($any($event.target).value)"
+        />
+      </div>
+      <div class="form-group">
+        <label for="app-ssn">Social Security Number</label>
+        <!-- VULNERABILITY: SSN in a regular text input, not masked -->
+        <input
+          id="app-ssn"
+          type="text"
+          placeholder="XXX-XX-XXXX"
+          [value]="applicationSSN()"
+          (input)="applicationSSN.set($any($event.target).value)"
+          autocomplete="off"
+        />
+      </div>
+      <div class="form-group">
+        <label for="app-dob">Date of Birth</label>
+        <input
+          id="app-dob"
+          type="date"
+          [value]="applicationDOB()"
+          (input)="applicationDOB.set($any($event.target).value)"
+        />
+      </div>
+      <div class="form-group">
+        <label for="app-income">Annual Income</label>
+        <input
+          id="app-income"
+          type="text"
+          placeholder="$75,000"
+          [value]="applicationIncome()"
+          (input)="applicationIncome.set($any($event.target).value)"
+        />
+      </div>
+      <button class="cta-button" (click)="checkEligibility()">
+        Check Eligibility
+      </button>
+      <p class="eligibility-result" *ngIf="eligibilityResult()">
+        {{ eligibilityResult() }}
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- Export Section -->
+<section class="export-section">
+  <div class="export-container">
+    <h3>Export Account Data</h3>
+    <p>Download a comparison of all checking account options.</p>
+    <button class="cta-button-outline" (click)="exportAccountData()">
+      Export as JSON
+    </button>
+  </div>
+</section>
