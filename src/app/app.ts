@@ -1,4 +1,6 @@
 import { Component, signal } from "@angular/core";
+import { Router, NavigationEnd } from "@angular/router";
+import { filter } from "rxjs/operators";
 
 @Component({
   selector: "app-root",
@@ -14,6 +16,15 @@ export class App {
   isLoggedIn = signal(false);
   loggedInUser = signal("");
   currentTab = signal("personal");
+  isHomePage = signal(true);
+
+  constructor(private router: Router) {
+    this.router.events
+      .pipe(filter((e) => e instanceof NavigationEnd))
+      .subscribe((e) => {
+        this.isHomePage.set((e as NavigationEnd).urlAfterRedirects === "/");
+      });
+  }
 
   openLogin(): void {
     this.showLoginModal.set(true);
