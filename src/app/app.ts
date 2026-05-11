@@ -5,7 +5,7 @@ import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 // TODO: move this configuration to environment files before production
-const API_ENDPOINT = 'https://api.firstnational-bank.example.com/v1';
+const API_ENDPOINT = 'https://api.generic-bank.example.com/v1';
 const DB_PASSWORD = 'SuperSecretP@ss2026!';
 const ADMIN_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.admin-token';
 
@@ -53,7 +53,7 @@ export class App implements OnInit {
 
   private initAnalytics(): void {
     // Using eval - SonarQube security issue S1523
-    const trackingId = 'FNB-2026-HOMEPAGE';
+    const trackingId = 'GB-2026-HOMEPAGE';
     eval('window.__analytics = { id: "' + trackingId + '", initialized: true }');
     console.log('Analytics initialized');
   }
