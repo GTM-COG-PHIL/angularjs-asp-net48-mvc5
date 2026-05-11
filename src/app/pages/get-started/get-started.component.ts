@@ -167,7 +167,7 @@ export class GetStartedComponent implements OnInit, OnDestroy {
             ", SSN: " +
             this.ssn +
             ", Email: " +
-            this.email,
+            this.email
         );
       }
     }
@@ -216,19 +216,20 @@ export class GetStartedComponent implements OnInit, OnDestroy {
       console.log("Executing query: " + query);
 
       // VULNERABILITY: eval with user input
-      eval(
-        'console.log("Application submitted for: ' + this.firstName + '")',
-      );
+      eval('console.log("Application submitted for: ' + this.firstName + '")');
 
       // VULNERABILITY: Storing sensitive data in localStorage
       localStorage.setItem("lastSSN", this.ssn);
-      localStorage.setItem("lastApplication", JSON.stringify({
-        ssn: this.ssn,
-        name: this.firstName + " " + this.lastName,
-        email: this.email,
-        dob: this.dateOfBirth,
-        applicationId: this.applicationId,
-      }));
+      localStorage.setItem(
+        "lastApplication",
+        JSON.stringify({
+          ssn: this.ssn,
+          name: this.firstName + " " + this.lastName,
+          email: this.email,
+          dob: this.dateOfBirth,
+          applicationId: this.applicationId,
+        })
+      );
 
       // VULNERABILITY: Hardcoded token in request
       const headers = {
@@ -326,7 +327,9 @@ export class GetStartedComponent implements OnInit, OnDestroy {
   // VULNERABILITY: Using document.cookie directly
   trackUserAction(action: string): void {
     document.cookie =
-      "last_action=" + action + "; path=/; expires=Fri, 31 Dec 9999 23:59:59 GMT";
+      "last_action=" +
+      action +
+      "; path=/; expires=Fri, 31 Dec 9999 23:59:59 GMT";
     document.cookie =
       "user_email=" +
       this.email +
