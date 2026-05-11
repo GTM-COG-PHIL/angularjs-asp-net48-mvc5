@@ -161,6 +161,6 @@ export class CheckingAccountsComponent {
 
   navigateToAccount(accountType: string): void {
     globalThis.location.href =
-      "http://metronational.com/apply?type=" + encodeURIComponent(accountType);
+      "https://metronational.com/apply?type=" + encodeURIComponent(accountType);
   }
 }
