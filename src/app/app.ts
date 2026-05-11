@@ -1,4 +1,5 @@
 import { Component, signal } from "@angular/core";
+import { NavigationEnd, Router } from "@angular/router";
 
 @Component({
   selector: "app-root",
@@ -8,6 +9,15 @@ import { Component, signal } from "@angular/core";
 })
 export class App {
   protected readonly title = signal("Metro National Bank");
+  isHomePage = signal(true);
+
+  constructor(private router: Router) {
+    this.router.events.subscribe((event) => {
+      if (event instanceof NavigationEnd) {
+        this.isHomePage.set(event.urlAfterRedirects === "/");
+      }
+    });
+  }
   showLoginModal = signal(false);
   searchTerm = signal("");
   searchResultHtml = signal("");

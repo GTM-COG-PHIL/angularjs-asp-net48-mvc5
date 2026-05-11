@@ -1,3 +1,4 @@
+@if (isHomePage()) {
 <!-- Top Utility Bar -->
 <div class="utility-bar">
   <div class="utility-container">
@@ -172,7 +173,7 @@
     <!-- Secondary Navigation -->
     <nav class="secondary-nav" aria-label="Secondary Navigation">
       <ul>
-        <li><a href="#">Checking Accounts</a></li>
+        <li><a href="/checking-accounts">Checking Accounts</a></li>
         <li><a href="#">Savings Accounts</a></li>
         <li><a href="#">Credit Cards</a></li>
         <li><a href="#">Home Loans</a></li>
@@ -187,6 +188,11 @@
 <!-- VULNERABILITY: innerHTML binding for XSS -->
 <div [innerHTML]="searchResultHtml()" class="search-results-container"></div>
 
+}
+
+<router-outlet></router-outlet>
+
+@if (isHomePage()) {
 <!-- Hero Banner -->
 <section class="hero">
   <div class="hero-container">
@@ -219,7 +225,7 @@
 <!-- Quick Links -->
 <section class="quick-links">
   <div class="quick-links-container">
-    <a href="#" class="quick-link-card">
+    <a href="/checking-accounts" class="quick-link-card">
       <div class="quick-link-icon">
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -471,7 +477,10 @@
   </div>
 </section>
 
+}
+
 <!-- Footer -->
+@if (isHomePage()) {
 <footer class="main-footer">
   <div class="footer-container">
     <div class="footer-top">
@@ -593,6 +602,7 @@
     </div>
   </div>
 </footer>
+}
 
 <!-- Login Modal -->
 <app-login-modal
