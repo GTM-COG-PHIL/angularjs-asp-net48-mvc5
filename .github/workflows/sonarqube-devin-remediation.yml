@@ -1,0 +1,348 @@
+name: SonarQube PR Review
+
+# ──────────────────────────────────────────────────────────────────────
+# Triggers Devin sessions to remediate SonarQube quality-gate failures.
+#
+# Required secrets:
+#   SONAR_TOKEN      – SonarQube / SonarCloud user token
+#   DEVIN_API_KEY    – Devin API key
+#   DEVIN_ORG_ID     – Devin organisation ID
+#
+# Required repository variables (Settings → Variables → Actions):
+#   SONAR_HOST_URL     – e.g. https://sonarcloud.io or https://sonarqube.example.com
+#   SONAR_PROJECT_KEY  – e.g. my-org_my-repo
+# ──────────────────────────────────────────────────────────────────────
+
+on:
+  # Trigger when SonarCloud's GitHub App check completes on a PR.
+  check_run:
+    types: [completed]
+
+  # Trigger after a SonarQube scan GitHub Action completes.
+  # ⚠️  Change the workflow name below to match your scan workflow.
+  workflow_run:
+    workflows: ["SonarQube Analysis"]
+    types: [completed]
+
+  # Manual trigger for testing / ad-hoc remediation.
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "PR number to analyze"
+        required: true
+        type: number
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: read
+
+jobs:
+  review:
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'check_run' &&
+       contains(github.event.check_run.name, 'SonarCloud') &&
+       github.event.check_run.conclusion != 'cancelled' &&
+       github.event.check_run.pull_requests[0]) ||
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.event == 'pull_request' &&
+       github.event.workflow_run.conclusion != 'cancelled' &&
+       github.event.workflow_run.conclusion != 'skipped')
+    runs-on: ubuntu-latest
+
+    steps:
+      # ── 1. Resolve PR number & head SHA ────────────────────────────
+      - name: Resolve PR number
+        id: pr
+        uses: actions/github-script@v8
+        with:
+          script: |
+            if (context.eventName === 'workflow_dispatch') {
+              const prNum = '${{ inputs.pr_number }}';
+              const { data: pr } = await github.rest.pulls.get({
+                owner: context.repo.owner,
+                repo:  context.repo.repo,
+                pull_number: Number(prNum)
+              });
+              core.setOutput('number',   prNum);
+              core.setOutput('head_sha', pr.head.sha);
+              return;
+            }
+
+            // check_run events carry pull_requests directly
+            if (context.eventName === 'check_run') {
+              const prs = context.payload.check_run.pull_requests || [];
+              if (prs.length === 0) {
+                core.setFailed('No PR associated with this check_run.');
+                return;
+              }
+              core.setOutput('number',   prs[0].number);
+              core.setOutput('head_sha', context.payload.check_run.head_sha);
+              return;
+            }
+
+            // workflow_run events
+            const prs = context.payload.workflow_run.pull_requests || [];
+            if (prs.length === 0) {
+              core.setFailed('No PR associated with this workflow_run (likely a fork PR).');
+              return;
+            }
+            core.setOutput('number',   prs[0].number);
+            core.setOutput('head_sha', context.payload.workflow_run.head_sha);
+
+      # ── 2. Wait for SonarQube background analysis to finish ────────
+      - name: Wait for SonarQube analysis
+        env:
+          SONAR_TOKEN:       ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL:    ${{ vars.SONAR_HOST_URL }}
+          SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
+        run: |
+          for i in $(seq 1 30); do
+            PENDING=$(curl -sf -u "${SONAR_TOKEN}:" \
+              "${SONAR_HOST_URL}/api/ce/activity?component=${SONAR_PROJECT_KEY}&type=REPORT&status=PENDING,IN_PROGRESS" \
+              | jq '.tasks | length' 2>/dev/null || echo "0")
+            [ "$PENDING" = "0" ] && break
+            echo "Analysis in progress — waiting (attempt ${i}/30)…"
+            sleep 10
+          done
+
+      # ── 3. Check Quality Gate status ───────────────────────────────
+      - name: Check Quality Gate
+        id: gate
+        env:
+          SONAR_TOKEN:       ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL:    ${{ vars.SONAR_HOST_URL }}
+          SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
+          PR_NUMBER:         ${{ steps.pr.outputs.number }}
+        run: |
+          RESPONSE=$(curl -sf -u "${SONAR_TOKEN}:" \
+            "${SONAR_HOST_URL}/api/qualitygates/project_status?projectKey=${SONAR_PROJECT_KEY}&pullRequest=${PR_NUMBER}" \
+            2>/dev/null || echo '{}')
+
+          STATUS=$(echo "$RESPONSE" | jq -r '.projectStatus.status // "NONE"')
+          echo "status=${STATUS}" >> "$GITHUB_OUTPUT"
+          echo "Quality Gate: ${STATUS}"
+
+          # Persist failed conditions for later steps
+          echo "$RESPONSE" \
+            | jq '[.projectStatus.conditions // [] | .[] | select(.status == "ERROR")]' \
+            > failed_conditions.json
+
+          FAILED=$(jq 'length' failed_conditions.json)
+          echo "failed_conditions=${FAILED}" >> "$GITHUB_OUTPUT"
+
+          jq -r '.[] | "  ✗ \(.metricKey): actual \(.actualValue) (threshold \(.comparator) \(.errorThreshold))"' \
+            failed_conditions.json
+
+      # ── 4. Fetch open issues on the PR ─────────────────────────────
+      - name: Fetch issues
+        id: issues
+        if: steps.gate.outputs.status == 'ERROR'
+        env:
+          SONAR_TOKEN:       ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL:    ${{ vars.SONAR_HOST_URL }}
+          SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
+          PR_NUMBER:         ${{ steps.pr.outputs.number }}
+        run: |
+          echo "[]" > all_issues.json
+          PAGE=1
+
+          while true; do
+            RESP=$(curl -sf -u "${SONAR_TOKEN}:" \
+              "${SONAR_HOST_URL}/api/issues/search?componentKeys=${SONAR_PROJECT_KEY}&pullRequest=${PR_NUMBER}&resolved=false&statuses=OPEN,CONFIRMED&ps=500&p=${PAGE}")
+
+            ISSUES=$(echo "$RESP" | jq '.issues // []')
+            TOTAL=$(echo "$RESP" | jq '.paging.total // 0')
+
+            jq -s '.[0] + .[1]' all_issues.json <(echo "$ISSUES") > tmp.json
+            mv tmp.json all_issues.json
+
+            FETCHED=$(jq 'length' all_issues.json)
+            [ "$FETCHED" -ge "$TOTAL" ] || [ "$(echo "$ISSUES" | jq 'length')" -eq 0 ] && break
+            PAGE=$((PAGE + 1))
+          done
+
+          COUNT=$(jq 'length' all_issues.json)
+          echo "count=${COUNT}" >> "$GITHUB_OUTPUT"
+          echo "Found ${COUNT} open issue(s) on PR #${PR_NUMBER}"
+
+      # ── 5. Create Devin sessions ───────────────────────────────────
+      - name: Start Devin sessions
+        id: devin
+        if: steps.gate.outputs.status == 'ERROR'
+        env:
+          DEVIN_API_KEY:     ${{ secrets.DEVIN_API_KEY }}
+          DEVIN_ORG_ID:      ${{ secrets.DEVIN_ORG_ID }}
+          SONAR_HOST_URL:    ${{ vars.SONAR_HOST_URL }}
+          SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
+          REPO:              ${{ github.repository }}
+          PR_NUMBER:         ${{ steps.pr.outputs.number }}
+          HEAD_SHA:          ${{ steps.pr.outputs.head_sha }}
+        run: |
+          touch session_urls.txt
+          ISSUE_COUNT=$(jq 'length' all_issues.json 2>/dev/null || echo "0")
+
+          # ── 5a. Issue-based sessions (grouped by file, max 10) ─────
+          if [ "$ISSUE_COUNT" -gt 0 ]; then
+            while IFS= read -r group; do
+              COMPONENT=$(echo "$group" | jq -r '.[0].component')
+              FILE=${COMPONENT#"${SONAR_PROJECT_KEY}:"}
+              N=$(echo "$group" | jq 'length')
+
+              DETAILS=""
+              while IFS= read -r issue; do
+                KEY=$(jq -r  '.key'                                            <<<"$issue")
+                RULE=$(jq -r '.rule'                                           <<<"$issue")
+                SEV=$(jq -r  '.severity // .impacts[0].severity // "MEDIUM"'   <<<"$issue")
+                TYPE=$(jq -r '.type // .impacts[0].softwareQuality // "ISSUE"' <<<"$issue")
+                MSG=$(jq -r  '.message // ""'                                  <<<"$issue")
+                LINE=$(jq -r '.line // .textRange.startLine // "?"'            <<<"$issue")
+                URL="${SONAR_HOST_URL}/project/issues?id=${SONAR_PROJECT_KEY}&pullRequest=${PR_NUMBER}&open=${KEY}"
+
+                DETAILS="${DETAILS}
+          - Issue ${KEY} (rule: ${RULE})
+            Severity: ${SEV} | Type: ${TYPE} | Line: ${LINE}
+            Message: ${MSG}
+            URL: ${URL}"
+              done < <(echo "$group" | jq -c '.[]')
+
+              PROMPT="Remediate SonarQube quality-gate issues on PR #${PR_NUMBER} of ${REPO} (commit ${HEAD_SHA}).
+
+          The SonarQube quality gate has FAILED. The following ${N} issue(s) were found in \`${FILE}\`:
+          ${DETAILS}
+
+          Please:
+          1. Check out the PR branch and inspect the flagged code in \`${FILE}\`.
+          2. For each issue decide whether it is a true positive, false positive, or acceptable risk.
+          3. If true positive, push a fix commit to the PR branch.
+          4. If false positive, comment on the PR with a clear justification.
+          5. Ensure fixes do not break existing tests or introduce new issues."
+
+              TITLE="SonarQube: ${N} issue(s) in ${FILE} — PR #${PR_NUMBER}"
+
+              RESP=$(curl -s -w "\n%{http_code}" --request POST \
+                --url "https://api.devin.ai/v3/organizations/${DEVIN_ORG_ID}/sessions" \
+                --header "Authorization: Bearer ${DEVIN_API_KEY}" \
+                --header "Content-Type: application/json" \
+                --data "$(jq -n \
+                  --arg prompt "$PROMPT" \
+                  --arg title "$TITLE" \
+                  '{
+                    prompt: $prompt,
+                    advanced_mode: "analyze",
+                    bypass_approval: true,
+                    tags: ["sonarqube","quality-gate","pr-review"],
+                    title: $title
+                  }')")
+
+              CODE=$(echo "$RESP" | tail -1)
+              BODY=$(echo "$RESP" | sed '$d')
+
+              if [ "$CODE" -ge 200 ] && [ "$CODE" -lt 300 ]; then
+                SURL=$(jq -r '.url // empty' <<<"$BODY")
+                echo "- \`${FILE}\` (${N} issue(s)): [Devin session](${SURL})" >> session_urls.txt
+              else
+                echo "::warning::Session failed for ${FILE} (HTTP ${CODE})"
+                echo "- \`${FILE}\` (${N} issue(s)): session failed (HTTP ${CODE})" >> session_urls.txt
+              fi
+            done < <(jq -c 'group_by(.component) | sort_by(-(length)) | .[:10] | .[]' all_issues.json)
+          fi
+
+          # ── 5b. Metric-only failures (coverage, duplication, etc.) ─
+          while IFS= read -r cond; do
+            METRIC=$(jq -r    '.metricKey'      <<<"$cond")
+            ACTUAL=$(jq -r    '.actualValue'    <<<"$cond")
+            THRESHOLD=$(jq -r '.errorThreshold' <<<"$cond")
+            CMP=$(jq -r       '.comparator'     <<<"$cond")
+
+            PROMPT="The SonarQube quality gate for PR #${PR_NUMBER} of ${REPO} (commit ${HEAD_SHA}) FAILED on metric **${METRIC}**.
+
+          Current value: ${ACTUAL}
+          Required threshold: ${CMP} ${THRESHOLD}
+
+          Please:
+          1. Check out the PR branch.
+          2. Identify code in this PR that contributes to the failing metric (e.g. missing tests, duplicated blocks).
+          3. Add tests or refactor to meet the quality-gate threshold.
+          4. Push fix commits to the PR branch."
+
+            TITLE="SonarQube: ${METRIC} gate failed — PR #${PR_NUMBER}"
+
+            RESP=$(curl -s -w "\n%{http_code}" --request POST \
+              --url "https://api.devin.ai/v3/organizations/${DEVIN_ORG_ID}/sessions" \
+              --header "Authorization: Bearer ${DEVIN_API_KEY}" \
+              --header "Content-Type: application/json" \
+              --data "$(jq -n \
+                --arg prompt "$PROMPT" \
+                --arg title "$TITLE" \
+                '{
+                  prompt: $prompt,
+                  advanced_mode: "analyze",
+                  bypass_approval: true,
+                  tags: ["sonarqube","quality-gate","pr-review"],
+                  title: $title
+                }')")
+
+            CODE=$(echo "$RESP" | tail -1)
+            BODY=$(echo "$RESP" | sed '$d')
+
+            if [ "$CODE" -ge 200 ] && [ "$CODE" -lt 300 ]; then
+              SURL=$(jq -r '.url // empty' <<<"$BODY")
+              echo "- Metric \`${METRIC}\` (actual: ${ACTUAL}, threshold: ${CMP} ${THRESHOLD}): [Devin session](${SURL})" >> session_urls.txt
+            else
+              echo "::warning::Session failed for metric ${METRIC} (HTTP ${CODE})"
+              echo "- Metric \`${METRIC}\`: session failed (HTTP ${CODE})" >> session_urls.txt
+            fi
+          done < <(jq -c '.[] | select(.metricKey | test("coverage|duplicat"))' failed_conditions.json 2>/dev/null)
+
+          {
+            printf 'sessions<<DEVIN_SESSIONS_EOF\n'
+            cat session_urls.txt
+            printf 'DEVIN_SESSIONS_EOF\n'
+          } >> "$GITHUB_OUTPUT"
+
+      # ── 6. Comment on the PR ───────────────────────────────────────
+      - name: Comment on PR
+        if: always() && steps.pr.outputs.number
+        uses: actions/github-script@v8
+        env:
+          PR_NUMBER:         ${{ steps.pr.outputs.number }}
+          GATE_STATUS:       ${{ steps.gate.outputs.status }}
+          ISSUE_COUNT:       ${{ steps.issues.outputs.count }}
+          FAILED_CONDITIONS: ${{ steps.gate.outputs.failed_conditions }}
+          SESSIONS:          ${{ steps.devin.outputs.sessions }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { PR_NUMBER, GATE_STATUS, ISSUE_COUNT, FAILED_CONDITIONS, SESSIONS } = process.env;
+
+            if (GATE_STATUS === 'OK') {
+              await github.rest.issues.createComment({
+                issue_number: Number(PR_NUMBER),
+                owner: context.repo.owner,
+                repo:  context.repo.repo,
+                body:  '✅ SonarQube Quality Gate **passed** — no remediation needed.'
+              });
+              return;
+            }
+
+            if (GATE_STATUS === 'NONE') {
+              core.warning('No quality-gate data found — is SonarQube PR analysis configured?');
+              return;
+            }
+
+            if (GATE_STATUS === 'ERROR') {
+              await github.rest.issues.createComment({
+                issue_number: Number(PR_NUMBER),
+                owner: context.repo.owner,
+                repo:  context.repo.repo,
+                body: [
+                  `🔍 **SonarQube Quality Gate FAILED** — ${FAILED_CONDITIONS || '?'} condition(s) not met, ${ISSUE_COUNT || '0'} issue(s) found.`,
+                  '',
+                  'Devin is remediating:',
+                  '',
+                  SESSIONS || '_No sessions created._'
+                ].join('\n')
+              });
+            }
