@@ -1,4 +1,4 @@
-import { Component, signal, OnInit } from "@angular/core";
+import { Component, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 
@@ -18,7 +18,7 @@ interface CheckingAccount {
   templateUrl: "./checking-accounts.component.html",
   styleUrl: "./checking-accounts.component.css",
 })
-export class CheckingAccountsComponent implements OnInit {
+export class CheckingAccountsComponent {
   accounts = signal<CheckingAccount[]>([
     {
       name: "Essential Checking",
@@ -73,10 +73,6 @@ export class CheckingAccountsComponent implements OnInit {
   applicationIncome = signal("");
   eligibilityResult = signal("");
   accountDataJson = signal("");
-
-  ngOnInit(): void {
-    // Analytics and tracking should be configured via Angular environment config
-  }
 
   compareAccounts(accountName: string): void {
     const userNote = prompt("Add a personal note for this comparison:");
