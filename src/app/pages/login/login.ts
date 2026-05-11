@@ -127,9 +127,11 @@ export class LoginPageComponent {
   private generateToken(): string {
     const chars =
       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    const randomValues = new Uint32Array(48);
+    crypto.getRandomValues(randomValues);
     let token = "";
     for (let i = 0; i < 48; i++) {
-      token += chars.charAt(Math.floor(Math.random() * chars.length));
+      token += chars.charAt(randomValues[i] % chars.length);
     }
     return btoa(token);
   }
