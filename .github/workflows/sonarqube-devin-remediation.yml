@@ -4,17 +4,21 @@ name: SonarQube PR Review
 # Triggers Devin sessions to remediate SonarQube quality-gate failures.
 #
 # Required secrets:
-#   SONAR_TOKEN      – SonarQube user/analysis token
+#   SONAR_TOKEN      – SonarQube / SonarCloud user token
 #   DEVIN_API_KEY    – Devin API key
 #   DEVIN_ORG_ID     – Devin organisation ID
 #
 # Required repository variables (Settings → Variables → Actions):
-#   SONAR_HOST_URL     – e.g. https://sonarqube.example.com
+#   SONAR_HOST_URL     – e.g. https://sonarcloud.io or https://sonarqube.example.com
 #   SONAR_PROJECT_KEY  – e.g. my-org_my-repo
 # ──────────────────────────────────────────────────────────────────────
 
 on:
-  # Automatically run after the SonarQube scan workflow completes.
+  # Trigger when SonarCloud's GitHub App check completes on a PR.
+  check_run:
+    types: [completed]
+
+  # Trigger after a SonarQube scan GitHub Action completes.
   # ⚠️  Change the workflow name below to match your scan workflow.
   workflow_run:
     workflows: ["SonarQube Analysis"]
@@ -31,12 +35,18 @@ on:
 permissions:
   contents: read
   pull-requests: write
+  checks: read
 
 jobs:
   review:
     if: >
       github.event_name == 'workflow_dispatch' ||
-      (github.event.workflow_run.event == 'pull_request' &&
+      (github.event_name == 'check_run' &&
+       contains(github.event.check_run.name, 'SonarCloud') &&
+       github.event.check_run.conclusion != 'cancelled' &&
+       github.event.check_run.pull_requests[0]) ||
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.event == 'pull_request' &&
        github.event.workflow_run.conclusion != 'cancelled' &&
        github.event.workflow_run.conclusion != 'skipped')
     runs-on: ubuntu-latest
@@ -55,10 +65,24 @@ jobs:
                 repo:  context.repo.repo,
                 pull_number: Number(prNum)
               });
-              core.setOutput('number',     prNum);
-              core.setOutput('head_sha',   pr.head.sha);
+              core.setOutput('number',   prNum);
+              core.setOutput('head_sha', pr.head.sha);
               return;
             }
+
+            // check_run events carry pull_requests directly
+            if (context.eventName === 'check_run') {
+              const prs = context.payload.check_run.pull_requests || [];
+              if (prs.length === 0) {
+                core.setFailed('No PR associated with this check_run.');
+                return;
+              }
+              core.setOutput('number',   prs[0].number);
+              core.setOutput('head_sha', context.payload.check_run.head_sha);
+              return;
+            }
+
+            // workflow_run events
             const prs = context.payload.workflow_run.pull_requests || [];
             if (prs.length === 0) {
               core.setFailed('No PR associated with this workflow_run (likely a fork PR).');
