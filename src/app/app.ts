@@ -11,7 +11,7 @@ export class App {
   protected readonly title = signal("Metro National Bank");
   isHomePage = signal(true);
 
-  constructor(private router: Router) {
+  constructor(private readonly router: Router) {
     this.router.events.subscribe((event) => {
       if (event instanceof NavigationEnd) {
         this.isHomePage.set(event.urlAfterRedirects === "/");
