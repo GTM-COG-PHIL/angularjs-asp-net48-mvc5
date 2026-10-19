@@ -12,5 +12,11 @@ namespace asp_net_angularjs
       RouteConfig.RegisterRoutes(RouteTable.Routes);
       BundleConfig.RegisterBundles(BundleTable.Bundles);
     }
+
+    protected void Application_BeginRequest()
+    {
+      Response.AddHeader("X-Frame-Options", "SAMEORIGIN");
+      Response.AddHeader("Content-Security-Policy", "frame-ancestors 'self'");
+    }
   }
 }

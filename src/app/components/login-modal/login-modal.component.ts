@@ -182,13 +182,7 @@ export class LoginModalComponent {
 
   // VULNERABILITY: Cognitive complexity — deeply nested validation logic
   onSubmit(): void {
-    // VULNERABILITY: console.log in production code
-    console.log(
-      "Login attempt for user: " +
-        this.username +
-        " with password: " +
-        this.password
-    );
+    console.log("Login attempt for user: " + this.username);
 
     if (this.username) {
       if (this.username.length >= 3) {
@@ -201,9 +195,7 @@ export class LoginModalComponent {
                   this.username.length <= 20
                 ) {
                   if (this.rememberMe) {
-                    // VULNERABILITY: Storing credentials in localStorage
                     localStorage.setItem("savedUsername", this.username);
-                    localStorage.setItem("savedPassword", this.password);
                   }
                   const token = this.generateSessionToken();
                   console.log("Generated session token: " + token);
