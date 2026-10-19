@@ -58,6 +58,8 @@ These are deliberate and are the "fix me" material for the demo beyond security.
 | RQ-1 | `Controllers/AdminToolsController.cs:41-44` | `FindById` can return `null`; `record.Id` dereferenced without a check → HTTP 500 for unknown IDs | `csharpsquid:S2259` (null dereference) | Return `HttpNotFoundResult` when `record == null` |
 | RQ-2 | `Services/AdminTools/CustomerDirectory.cs:30` | `segment.Trim();` return value discarded (string is immutable) → filter uses untrimmed value | `csharpsquid:S2201` (return value ignored) | `segment = segment.Trim();` |
 | RQ-3 | `Services/AdminTools/ReportExportService.cs:33-39` | Empty `catch (Exception) {}` around `DateTime.ParseExact` silently swallows parse errors | `csharpsquid:S108` / `S2486` | Use `DateTime.TryParseExact` and return 400 on bad input |
+| RQ-4 | `Services/AdminTools/ReportExportService.cs:58,89,120` | CSV header says `# Generated <asOf>` — the caller-supplied as-of date is mislabelled as the generation date | logic bug (found by Devin Review) | Emit `# As of <asOf>` and `# Generated <UtcNow>` separately |
+| RQ-5 | `Services/AdminTools/CustomerDirectory.cs:34` | `(page - 1) * pageSize` in 32-bit arithmetic overflows for huge `page`; negative skip → first page returned while echoing the requested page | `csharpsquid:S3949`-family / logic bug (found by Devin Review) | 64-bit/checked arithmetic, or cap `page` and return 400 |
 | MQ-1 | `Services/AdminTools/CustomerDirectory.cs:47-120` | `ClassifyRiskTier` — deeply nested if/else, cognitive complexity far above 15 | `csharpsquid:S3776`, `S134` (nesting) | Table-driven rules or early returns |
 | MQ-2 | `Services/AdminTools/ReportExportService.cs:54-145` | `BuildBalancesReport` / `BuildDormantReport` / `BuildKycReport` are three near-identical copies (~30 lines each) | Duplicated blocks (`new_duplicated_lines_density` > 3 %) | One `BuildReport(title, rows, asOf)` method |
 | MQ-3 | `Services/AdminTools/ReportExportService.cs:147-153` | Commented-out legacy code | `csharpsquid:S125` | Delete |
@@ -111,6 +113,7 @@ These are the findings scanners *do* report. They were already in the repo befor
   - `new_reliability_rating` = **C** (required A) — driven by `S2201` (RQ-2) and `Web:InputWithoutLabelCheck`
   - `new_duplicated_lines_density` = **7.4 %** (required ≤ 3 %) — the three `Build*Report` copies (MQ-2)
   - `new_maintainability_rating` = A (19 issues, but debt ratio stays under the A threshold), `new_security_rating` = A, hotspots reviewed 100 % (none in new code)
+  - Devin Review on PR #11 flagged 5 bugs: RQ-1, RQ-2, RQ-3 (planted) plus RQ-4 and RQ-5 (above) — all left open as remediation material.
   - 19 open issues on new code: `S3776` (cognitive complexity 37 — MQ-1), `S2201` (RQ-2), `S2486`+`S108` (RQ-3), `S125` (MQ-3), `S107` (9-parameter `Make`), `S1192` ×5 (repeated string literals), `S2325` ×6 (methods could be static), `css:S9423` (`!important`), `css:S7924` (text contrast), `Web:InputWithoutLabelCheck` (`app.html:130`, pre-existing search input now in a changed file).
   - Not flagged by Sonar: the null dereference in `AdminToolsController.Customer` (RQ-1) — still a real runtime 500, reproduce with `/admin/api/customer/9999`.
   - Dashboard: https://sonarcloud.io/dashboard?id=GTM-COG-PHIL_angularjs-asp-net48-mvc5&pullRequest=11
