@@ -1,0 +1,108 @@
+<section class="admin-tools">
+  <header class="admin-header">
+    <h1>Admin Tools</h1>
+    <p>Back-office utilities for branch operations. All customer data shown here is synthetic.</p>
+    <nav class="admin-nav" aria-label="Admin Tools sections">
+      <button type="button" [class.active]="panel() === 'customers'" (click)="show('customers')">Customer Search</button>
+      <button type="button" [class.active]="panel() === 'reports'" (click)="show('reports')">Report Export</button>
+      <button type="button" [class.active]="panel() === 'review'" (click)="show('review')">Security Review Queue</button>
+    </nav>
+  </header>
+
+  <p class="admin-error" *ngIf="error()">{{ error() }}</p>
+
+  <div class="admin-panel" *ngIf="panel() === 'customers'">
+    <form class="search-form" (ngSubmit)="search()">
+      <label>
+        Name, email or ID
+        <input type="text" name="query" [(ngModel)]="query" placeholder="e.g. Okafor or 1002" />
+      </label>
+      <label>
+        Segment
+        <select name="segment" [(ngModel)]="segment">
+          <option *ngFor="let s of segments" [value]="s">{{ s || "All segments" }}</option>
+        </select>
+      </label>
+      <button type="submit" class="primary" [disabled]="loading()">Search</button>
+    </form>
+
+    <table class="results" *ngIf="customers().length > 0">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Segment</th>
+          <th>Branch</th>
+          <th class="num">Balance</th>
+          <th>Last login</th>
+          <th>KYC</th>
+          <th>Risk tier</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let c of customers()">
+          <td>{{ c.id }}</td>
+          <td>{{ c.name }}</td>
+          <td>{{ c.email }}</td>
+          <td>{{ c.segment }}</td>
+          <td>{{ c.branch }}</td>
+          <td class="num">{{ c.balance | currency }}</td>
+          <td>{{ c.daysSinceLastLogin }} days ago</td>
+          <td>{{ c.kycVerified ? "Verified" : "Pending" }}</td>
+          <td><span class="risk" [ngClass]="riskClass(c.riskTier)">{{ c.riskTier }}</span></td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="empty" *ngIf="searched() && customers().length === 0">No customers matched.</p>
+  </div>
+
+  <div class="admin-panel" *ngIf="panel() === 'reports'">
+    <form class="search-form" (ngSubmit)="(false)">
+      <label>
+        Report
+        <select name="report" [(ngModel)]="selectedReport">
+          <option *ngFor="let r of reportTypes" [value]="r.id">{{ r.label }}</option>
+        </select>
+      </label>
+      <label>
+        As of (optional)
+        <input type="date" name="asOf" [(ngModel)]="asOf" />
+      </label>
+      <a class="primary button" [href]="exportHref()" download>Download CSV</a>
+    </form>
+    <p class="hint">Exports are generated server-side from a fixed report catalogue and streamed as CSV.</p>
+  </div>
+
+  <div class="admin-panel" *ngIf="panel() === 'review'">
+    <p class="hint">
+      Training queue for the security remediation rehearsal. Each entry is a <strong>simulated</strong>
+      scenario description; the application does not implement the weaknesses listed.
+    </p>
+    <table class="results" *ngIf="queue().length > 0">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Finding</th>
+          <th>Category</th>
+          <th>Severity</th>
+          <th>Component</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of queue()">
+          <td>{{ item.Id }}</td>
+          <td>
+            <div>{{ item.Title }}</div>
+            <small>{{ item.Summary }}</small>
+          </td>
+          <td>{{ item.Category }}</td>
+          <td><span class="risk" [ngClass]="'sev-' + item.Severity.toLowerCase()">{{ item.Severity }}</span></td>
+          <td>{{ item.Component }}</td>
+          <td>{{ item.Status }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>

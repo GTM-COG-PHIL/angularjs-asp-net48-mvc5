@@ -114,7 +114,12 @@
   <ItemGroup>
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
+    <Compile Include="Controllers\AdminToolsController.cs" />
     <Compile Include="Controllers\LandingController.cs" />
+    <Compile Include="Models\AdminTools\CustomerRecord.cs" />
+    <Compile Include="Services\AdminTools\CustomerDirectory.cs" />
+    <Compile Include="Services\AdminTools\ReportExportService.cs" />
+    <Compile Include="Services\AdminTools\ReviewQueueService.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>

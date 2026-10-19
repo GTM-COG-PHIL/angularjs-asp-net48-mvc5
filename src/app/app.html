@@ -18,6 +18,7 @@
       </span>
     </div>
     <div class="utility-right">
+      <a routerLink="/admin-tools" class="utility-link">Admin Tools</a>
       <a href="#" class="utility-link">
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -187,6 +188,9 @@
 <!-- VULNERABILITY: innerHTML binding for XSS -->
 <div [innerHTML]="searchResultHtml()" class="search-results-container"></div>
 
+<router-outlet></router-outlet>
+
+<ng-container *ngIf="!adminRoute()">
 <!-- Hero Banner -->
 <section class="hero">
   <div class="hero-container">
@@ -470,6 +474,8 @@
     </div>
   </div>
 </section>
+
+</ng-container>
 
 <!-- Footer -->
 <footer class="main-footer">

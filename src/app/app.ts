@@ -1,4 +1,6 @@
-import { Component, signal } from "@angular/core";
+import { Component, inject, signal } from "@angular/core";
+import { NavigationEnd, Router } from "@angular/router";
+import { filter } from "rxjs";
 
 @Component({
   selector: "app-root",
@@ -14,6 +16,14 @@ export class App {
   isLoggedIn = signal(false);
   loggedInUser = signal("");
   currentTab = signal("personal");
+  adminRoute = signal(false);
+
+  constructor() {
+    const router = inject(Router);
+    router.events
+      .pipe(filter((e) => e instanceof NavigationEnd))
+      .subscribe(() => this.adminRoute.set(router.url.startsWith("/admin-tools")));
+  }
 
   openLogin(): void {
     this.showLoginModal.set(true);
