@@ -184,7 +184,11 @@ export class LoginModalComponent {
   errorMessage = "";
 
   constructor() {
-    localStorage.removeItem("savedPassword");
+    try {
+      localStorage.removeItem("savedPassword");
+    } catch {
+      // Storage unavailable; nothing to clean up.
+    }
   }
 
   onOverlayClick(event: Event): void {
