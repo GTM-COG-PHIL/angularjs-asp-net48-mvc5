@@ -183,6 +183,10 @@ export class LoginModalComponent {
   rememberMe = false;
   errorMessage = "";
 
+  constructor() {
+    localStorage.removeItem("savedPassword");
+  }
+
   onOverlayClick(event: Event): void {
     this.close.emit();
   }
