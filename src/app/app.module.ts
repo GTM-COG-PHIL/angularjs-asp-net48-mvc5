@@ -1,7 +1,7 @@
 import { NgModule } from "@angular/core";
 import { BrowserModule } from "@angular/platform-browser";
 import { RouterModule } from "@angular/router";
-import { provideHttpClient } from "@angular/common/http";
+import { provideHttpClient, withXhr } from "@angular/common/http";
 
 import { App } from "./app";
 import { TestComponent } from "./components/test/test.component";
@@ -18,7 +18,7 @@ import { routes } from "./app.routes";
     TestDirectiveComponent,
     LoginModalComponent,
   ],
-  providers: [provideHttpClient()],
+  providers: [provideHttpClient(withXhr())],
   bootstrap: [App],
 })
 export class AppModule {}

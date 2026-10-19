@@ -1,8 +1,14 @@
-import { Component, OnInit, VERSION } from "@angular/core";
+import {
+  Component,
+  OnInit,
+  VERSION,
+  ChangeDetectionStrategy,
+} from "@angular/core";
 
 @Component({
   selector: "app-test",
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `<div data-testid="angular-version" class="test-component">
     Angular Version: {{ version }}
   </div>`,

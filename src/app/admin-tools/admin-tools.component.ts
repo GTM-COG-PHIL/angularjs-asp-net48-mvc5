@@ -1,4 +1,9 @@
-import { Component, inject, signal } from "@angular/core";
+import {
+  Component,
+  inject,
+  signal,
+  ChangeDetectionStrategy,
+} from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import {
@@ -15,13 +20,21 @@ type Panel = "customers" | "reports" | "review";
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: "./admin-tools.component.html",
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: "./admin-tools.component.css",
 })
 export class AdminToolsComponent {
   private readonly api = inject(AdminToolsService);
 
   readonly panel = signal<Panel>("customers");
-  readonly segments = ["", "Personal", "Student", "Business", "Corporate", "Wealth"];
+  readonly segments = [
+    "",
+    "Personal",
+    "Student",
+    "Business",
+    "Corporate",
+    "Wealth",
+  ];
   readonly reportTypes = REPORT_TYPES;
 
   query = "";

@@ -1,4 +1,10 @@
-import { Component, EventEmitter, Input, Output } from "@angular/core";
+import {
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+  ChangeDetectionStrategy,
+} from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 
@@ -58,6 +64,7 @@ const DEFAULT_ADMIN_PASSWORD = "admin123!";
       </div>
     </div>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [
     `
       .modal-overlay {
@@ -176,19 +183,21 @@ export class LoginModalComponent {
   rememberMe = false;
   errorMessage = "";
 
+  constructor() {
+    try {
+      localStorage.removeItem("savedPassword");
+    } catch {
+      // Storage unavailable; nothing to clean up.
+    }
+  }
+
   onOverlayClick(event: Event): void {
     this.close.emit();
   }
 
   // VULNERABILITY: Cognitive complexity — deeply nested validation logic
   onSubmit(): void {
-    // VULNERABILITY: console.log in production code
-    console.log(
-      "Login attempt for user: " +
-        this.username +
-        " with password: " +
-        this.password
-    );
+    console.log("Login attempt for user: " + this.username);
 
     if (this.username) {
       if (this.username.length >= 3) {
@@ -201,9 +210,7 @@ export class LoginModalComponent {
                   this.username.length <= 20
                 ) {
                   if (this.rememberMe) {
-                    // VULNERABILITY: Storing credentials in localStorage
                     localStorage.setItem("savedUsername", this.username);
-                    localStorage.setItem("savedPassword", this.password);
                   }
                   const token = this.generateSessionToken();
                   console.log("Generated session token: " + token);
