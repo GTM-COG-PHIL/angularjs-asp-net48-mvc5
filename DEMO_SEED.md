@@ -107,9 +107,13 @@ These are the findings scanners *do* report. They were already in the repo befor
 - Project `GTM-COG-PHIL_angularjs-asp-net48-mvc5`, Automatic Analysis, gate "Sonar way".
 - `main` status before this branch: **ERROR** — `new_security_rating = 3` (E) and
   `new_security_hotspots_reviewed = 0`. Reliability/maintainability/duplication were OK on main.
-- Expected effect of this branch (not verified until SonarCloud analyses the PR): reliability
-  rating drops (RQ-1/2/3), maintainability rating drops (MQ-1…6), duplication > 3 % (MQ-2),
-  so the gate fails on **security + reliability + maintainability + duplication**.
+- **Actual SonarCloud result for PR #11 (Automatic Analysis):** Quality Gate **FAILED**.
+  - `new_reliability_rating` = **C** (required A) — driven by `S2201` (RQ-2) and `Web:InputWithoutLabelCheck`
+  - `new_duplicated_lines_density` = **7.4 %** (required ≤ 3 %) — the three `Build*Report` copies (MQ-2)
+  - `new_maintainability_rating` = A (19 issues, but debt ratio stays under the A threshold), `new_security_rating` = A, hotspots reviewed 100 % (none in new code)
+  - 19 open issues on new code: `S3776` (cognitive complexity 37 — MQ-1), `S2201` (RQ-2), `S2486`+`S108` (RQ-3), `S125` (MQ-3), `S107` (9-parameter `Make`), `S1192` ×5 (repeated string literals), `S2325` ×6 (methods could be static), `css:S9423` (`!important`), `css:S7924` (text contrast), `Web:InputWithoutLabelCheck` (`app.html:130`, pre-existing search input now in a changed file).
+  - Not flagged by Sonar: the null dereference in `AdminToolsController.Customer` (RQ-1) — still a real runtime 500, reproduce with `/admin/api/customer/9999`.
+  - Dashboard: https://sonarcloud.io/dashboard?id=GTM-COG-PHIL_angularjs-asp-net48-mvc5&pullRequest=11
 
 ### CodeQL (local CLI 2.27.2, `codeql/csharp-queries` 1.10.1 + `codeql/javascript-queries` 2.4.7, `*-security-extended` suites)
 Databases built from this branch (`build-mode=none` for C#) and analysed with the
