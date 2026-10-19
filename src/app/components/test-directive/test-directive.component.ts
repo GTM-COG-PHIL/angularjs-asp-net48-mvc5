@@ -1,8 +1,9 @@
-import { Component, VERSION } from "@angular/core";
+import { Component, VERSION, ChangeDetectionStrategy } from "@angular/core";
 
 @Component({
   selector: "app-test-directive",
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `<div
     data-testid="angular-version-directive"
     class="test-directive"

@@ -1,4 +1,9 @@
-import { Component, inject, signal } from "@angular/core";
+import {
+  Component,
+  inject,
+  signal,
+  ChangeDetectionStrategy,
+} from "@angular/core";
 import { NavigationEnd, Router } from "@angular/router";
 import { filter } from "rxjs";
 
@@ -6,6 +11,7 @@ import { filter } from "rxjs";
   selector: "app-root",
   standalone: false,
   templateUrl: "./app.html",
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: "./app.css",
 })
 export class App {
@@ -22,7 +28,9 @@ export class App {
     const router = inject(Router);
     router.events
       .pipe(filter((e) => e instanceof NavigationEnd))
-      .subscribe(() => this.adminRoute.set(router.url.startsWith("/admin-tools")));
+      .subscribe(() =>
+        this.adminRoute.set(router.url.startsWith("/admin-tools")),
+      );
   }
 
   openLogin(): void {
@@ -48,7 +56,7 @@ export class App {
       this.searchResultHtml.set(
         '<div class="search-result"><p>Showing results for: <strong>' +
           query +
-          "</strong></p></div>"
+          "</strong></p></div>",
       );
       // VULNERABILITY: eval() usage
       eval('console.log("Search executed: ' + query + '")');
