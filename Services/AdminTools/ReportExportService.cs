@@ -50,78 +50,26 @@ namespace asp_net_angularjs.AdminTools
 
     private byte[] BuildBalancesReport(DateTime asOf)
     {
-      using (var writer = new StringWriter())
-      {
-        writer.WriteLine("# Metro National Bank - Balances report");
-        writer.WriteLine("# Generated " + asOf.ToString("yyyy-MM-dd") + " (synthetic data)");
-        writer.WriteLine("Id,Name,Email,Segment,Branch,Balance,RiskTier");
-        var rows = _directory.All().OrderByDescending(c => c.Balance).ToList();
-        var total = 0m;
-        var count = 0;
-        foreach (var c in rows)
-        {
-          writer.Write(c.Id);
-          writer.Write(",");
-          writer.Write(Escape(c.FullName));
-          writer.Write(",");
-          writer.Write(Escape(c.Email));
-          writer.Write(",");
-          writer.Write(Escape(c.Segment));
-          writer.Write(",");
-          writer.Write(Escape(c.Branch));
-          writer.Write(",");
-          writer.Write(c.Balance.ToString("F2", CultureInfo.InvariantCulture));
-          writer.Write(",");
-          writer.WriteLine(Escape(c.RiskTier));
-          total += c.Balance;
-          count++;
-        }
-        writer.WriteLine("# Rows: " + count + ", total balance: " + total.ToString("F2", CultureInfo.InvariantCulture));
-        return Encoding.UTF8.GetBytes(writer.ToString());
-      }
+      return BuildReport("Balances report", asOf, _directory.All().OrderByDescending(c => c.Balance));
     }
 
     private byte[] BuildDormantReport(DateTime asOf)
     {
-      using (var writer = new StringWriter())
-      {
-        writer.WriteLine("# Metro National Bank - Dormant accounts report");
-        writer.WriteLine("# Generated " + asOf.ToString("yyyy-MM-dd") + " (synthetic data)");
-        writer.WriteLine("Id,Name,Email,Segment,Branch,Balance,RiskTier");
-        var rows = _directory.All().Where(c => c.DaysSinceLastLogin > 365).OrderByDescending(c => c.DaysSinceLastLogin).ToList();
-        var total = 0m;
-        var count = 0;
-        foreach (var c in rows)
-        {
-          writer.Write(c.Id);
-          writer.Write(",");
-          writer.Write(Escape(c.FullName));
-          writer.Write(",");
-          writer.Write(Escape(c.Email));
-          writer.Write(",");
-          writer.Write(Escape(c.Segment));
-          writer.Write(",");
-          writer.Write(Escape(c.Branch));
-          writer.Write(",");
-          writer.Write(c.Balance.ToString("F2", CultureInfo.InvariantCulture));
-          writer.Write(",");
-          writer.WriteLine(Escape(c.RiskTier));
-          total += c.Balance;
-          count++;
-        }
-        writer.WriteLine("# Rows: " + count + ", total balance: " + total.ToString("F2", CultureInfo.InvariantCulture));
-        return Encoding.UTF8.GetBytes(writer.ToString());
-      }
+      return BuildReport("Dormant accounts report", asOf, _directory.All().Where(c => c.DaysSinceLastLogin > 365).OrderByDescending(c => c.DaysSinceLastLogin));
     }
 
     private byte[] BuildKycReport(DateTime asOf)
     {
+      return BuildReport("KYC outstanding report", asOf, _directory.All().Where(c => !c.KycVerified).OrderBy(c => c.Id));
+    }
+
+    private static byte[] BuildReport(string title, DateTime asOf, IEnumerable<CustomerRecord> rows)
+    {
       using (var writer = new StringWriter())
       {
-        writer.WriteLine("# Metro National Bank - KYC outstanding report");
+        writer.WriteLine("# Metro National Bank - " + title);
         writer.WriteLine("# Generated " + asOf.ToString("yyyy-MM-dd") + " (synthetic data)");
         writer.WriteLine("Id,Name,Email,Segment,Branch,Balance,RiskTier");
-        var rows = _directory.All().Where(c => !c.KycVerified).OrderBy(c => c.Id).ToList();
         var total = 0m;
         var count = 0;
         foreach (var c in rows)
